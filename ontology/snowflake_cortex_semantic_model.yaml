@@ -1,0 +1,118 @@
+﻿name: victorias_secret_scct_semantic_model
+description: "Snowflake Cortex Analyst semantic data model for Victoria's Secret & Co. Global Supply Chain Control Tower."
+tables:
+  - name: VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS
+    description: "Governed gold semantic view linking Sourcing, Production, Logistics, Warehousing, and Omnichannel Delivery."
+    base_table:
+      database: VS_SUPPLY_CHAIN_DB
+      schema: GOLD
+      table: DIM_FACT_SUPPLY_CHAIN_PERFORMANCE
+    dimensions:
+      - name: po_number
+        synonyms: ["purchase order", "PO code", "order number"]
+        description: "Sourcing purchase order identifier"
+        expr: po_number
+        data_type: VARCHAR
+      - name: sku_id
+        synonyms: ["item code", "product SKU", "part number"]
+        description: "Victoria's Secret SKU identifier"
+        expr: sku_id
+        data_type: VARCHAR
+      - name: sku_name
+        synonyms: ["product name", "item description", "style name"]
+        description: "Marketing name of the apparel or beauty product"
+        expr: sku_name
+        data_type: VARCHAR
+      - name: brand
+        synonyms: ["label", "brand family"]
+        description: "Brand division (Victoria's Secret, PINK, VS Beauty)"
+        expr: brand
+        data_type: VARCHAR
+      - name: category
+        synonyms: ["product department", "merchandise group"]
+        description: "Merchandise category (Bras, Panties, Loungewear, Fragrance)"
+        expr: category
+        data_type: VARCHAR
+      - name: factory_name
+        synonyms: ["supplier", "manufacturer", "vendor", "cut and sew plant"]
+        description: "Tier 1 Garment manufacturing facility"
+        expr: factory_name
+        data_type: VARCHAR
+      - name: sourcing_country
+        synonyms: ["origin country", "manufacturing location"]
+        description: "Country where finished good is assembled"
+        expr: sourcing_country
+        data_type: VARCHAR
+      - name: carrier_name
+        synonyms: ["freight forwarder", "shipping line", "3PL"]
+        description: "Logistics carrier (Maersk Ocean, FedEx Express, Hub Group)"
+        expr: carrier_name
+        data_type: VARCHAR
+      - name: rdc_name
+        synonyms: ["distribution center", "warehouse", "RDC hub"]
+        description: "North American Regional Distribution Center (Columbus Central RDC)"
+        expr: rdc_name
+        data_type: VARCHAR
+      - name: destination_channel
+        synonyms: ["sales channel", "store or online"]
+        description: "Fulfillment channel (Retail Stores, E-Commerce Direct, Outlet)"
+        expr: destination_channel
+        data_type: VARCHAR
+    time_dimensions:
+      - name: order_date
+        synonyms: ["po date", "creation date"]
+        description: "Date order was released"
+        expr: order_date
+        data_type: DATE
+      - name: promised_delivery_date
+        synonyms: ["promised date", "SLA target date", "due date"]
+        description: "Agreed upon customer or RDC delivery deadline"
+        expr: promised_delivery_date
+        data_type: DATE
+      - name: actual_delivery_date
+        synonyms: ["delivery date", "receipt date", "arrival date"]
+        description: "Actual recorded timestamp of delivery completion"
+        expr: actual_delivery_date
+        data_type: DATE
+    measures:
+      - name: total_ordered_units
+        synonyms: ["ordered quantity", "demand volume"]
+        description: "Total number of units ordered"
+        expr: units_ordered
+        default_aggregation: SUM
+        data_type: NUMBER
+      - name: total_fulfilled_units
+        synonyms: ["shipped quantity", "delivered volume"]
+        description: "Total number of units successfully delivered"
+        expr: units_fulfilled
+        default_aggregation: SUM
+        data_type: NUMBER
+      - name: on_time_delivered_count
+        synonyms: ["punctual shipments", "on time count"]
+        description: "Number of shipments delivered on or before SLA date without defects"
+        expr: "CASE WHEN actual_delivery_date <= promised_delivery_date AND defect_count = 0 THEN 1 ELSE 0 END"
+        default_aggregation: SUM
+        data_type: NUMBER
+      - name: total_landed_cost_usd
+        synonyms: ["landed spend", "total absorbed COGS"]
+        description: "Total all-in landed cost spend"
+        expr: total_landed_cost_usd
+        default_aggregation: SUM
+        data_type: NUMBER
+      - name: tariff_and_customs_paid_usd
+        synonyms: ["tariffs paid", "customs duties", "import taxes"]
+        description: "Total import duties and Section 301 tariffs paid"
+        expr: customs_duty_usd
+        default_aggregation: SUM
+        data_type: NUMBER
+
+verified_queries:
+  - name: on_time_delivery_by_country
+    question: "What is the On-Time Delivery rate and Landed Cost by sourcing country for Q3?"
+    sql: "SELECT sourcing_country, ROUND(SUM(CASE WHEN actual_delivery_date <= promised_delivery_date AND defect_count = 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS otd_pct, ROUND(AVG(unit_landed_cost_usd), 2) AS avg_landed_cost_usd FROM VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS GROUP BY sourcing_country ORDER BY otd_pct DESC;"
+  - name: days_of_inventory_by_rdc
+    question: "What are the Days of Inventory (DOI) across our North American Regional Distribution Centers?"
+    sql: "SELECT rdc_name, SUM(units_on_hand) AS total_units, ROUND(AVG(days_of_inventory), 1) AS avg_doi_days FROM VS_GOLD_INVENTORY_LEDGER_METRICS GROUP BY rdc_name ORDER BY avg_doi_days DESC;"
+  - name: supplier_allocation_and_risk
+    question: "Compare the production allocation, lead time, and tariff impact between MAS Holdings Sri Lanka and Crystal International Vietnam."
+    sql: "SELECT factory_name, sourcing_country, COUNT(po_number) AS total_pos, SUM(units_ordered) AS total_units_allocated, ROUND(AVG(lead_time_days), 1) AS avg_lead_time_days, ROUND(AVG(tariff_rate_pct), 2) AS avg_tariff_rate_pct, ROUND(AVG(unit_landed_cost_usd), 2) AS avg_unit_landed_cost FROM VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS WHERE factory_name IN ('MAS Holdings Active Fab', 'Crystal International Vietnam Ltd') GROUP BY factory_name, sourcing_country;"

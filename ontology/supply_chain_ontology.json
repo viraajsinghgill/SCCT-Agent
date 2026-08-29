@@ -1,0 +1,265 @@
+{
+  "name": "VictoriasSecretSupplyChainOntology",
+  "version": "2.1.0",
+  "description": "Enterprise Supply Chain & Sourcing Ontology for Victoria's Secret & Co. covering Multi-Tier BOM, Quality Audits, Sourcing Allocation, Tariffs, North American Omnichannel Logistics, and Returns.",
+  "entities": {
+    "RawMaterialSupplier_Tier3": {
+      "description": "Producers of base agricultural and chemical commodities (Supima cotton, nylon chips, elastane, brass underwires, dyes).",
+      "properties": [
+        "supplier_id",
+        "supplier_name",
+        "material_type",
+        "country_origin",
+        "oeko_tex_certified",
+        "gots_certified",
+        "tier_level"
+      ],
+      "primary_key": "supplier_id"
+    },
+    "FabricMill_Tier2": {
+      "description": "Knitting, weaving, dyeing, and finishing mills processing raw materials into certified fabric bolts.",
+      "properties": [
+        "mill_id",
+        "mill_name",
+        "country",
+        "dye_lab_accreditation",
+        "reach_compliance_status",
+        "lead_time_days",
+        "capacity_yards_monthly"
+      ],
+      "primary_key": "mill_id"
+    },
+    "GarmentManufacturer_Tier1": {
+      "description": "Finished goods cut-and-sew apparel factories assembling bras, panties, loungewear, and beauty packaging.",
+      "properties": [
+        "factory_id",
+        "factory_name",
+        "country",
+        "region",
+        "monthly_capacity_units",
+        "labor_audit_score",
+        "esg_rating",
+        "preferred_tier"
+      ],
+      "primary_key": "factory_id"
+    },
+    "ProductSKU": {
+      "description": "Finished apparel and beauty products sold across VS, PINK, and Beauty brands.",
+      "properties": [
+        "sku_id",
+        "sku_name",
+        "brand",
+        "category",
+        "subcategory",
+        "base_msrp_usd",
+        "target_cogs_usd",
+        "standard_bom_cost_usd"
+      ],
+      "primary_key": "sku_id"
+    },
+    "BillOfMaterials": {
+      "description": "Multi-level Bill of Materials linking Raw Materials (Tier 3) -> Fabrics (Tier 2) -> Finished SKUs (Tier 1).",
+      "properties": [
+        "bom_id",
+        "sku_id",
+        "material_id",
+        "component_name",
+        "quantity_required",
+        "unit_of_measure",
+        "yield_loss_pct"
+      ],
+      "primary_key": "bom_id"
+    },
+    "PurchaseOrder": {
+      "description": "Sourcing purchase orders allocated to Tier 1 factories with dual-source split and pricing terms.",
+      "properties": [
+        "po_number",
+        "po_line",
+        "sku_id",
+        "factory_id",
+        "ordered_units",
+        "unit_fob_price_usd",
+        "po_issue_date",
+        "factory_promise_date",
+        "po_status"
+      ],
+      "primary_key": "po_number"
+    },
+    "ShipmentLogistics": {
+      "description": "Ocean, air, and domestic freight shipments carrying PO units from global ports to North American RDCs.",
+      "properties": [
+        "shipment_id",
+        "po_number",
+        "carrier_name",
+        "mode",
+        "origin_port",
+        "destination_port",
+        "ship_date",
+        "estimated_arrival_date",
+        "actual_arrival_date",
+        "freight_cost_usd",
+        "customs_duty_usd",
+        "iot_temp_anomaly"
+      ],
+      "primary_key": "shipment_id"
+    },
+    "DistributionCenter_RDC": {
+      "description": "North American Regional Distribution Centers receiving bulk shipments and fulfilling retail stores and e-com.",
+      "properties": [
+        "rdc_id",
+        "rdc_name",
+        "city",
+        "state",
+        "country",
+        "storage_capacity_units",
+        "operating_cost_per_unit"
+      ],
+      "primary_key": "rdc_id"
+    },
+    "InventoryLedger": {
+      "description": "Real-time stock ledger across RDCs, Stores, and In-Transit pipelines with Days of Inventory (DOI) tracking.",
+      "properties": [
+        "inventory_id",
+        "sku_id",
+        "location_id",
+        "location_type",
+        "units_on_hand",
+        "units_in_transit",
+        "units_allocated",
+        "safety_stock_threshold",
+        "carrying_cost_per_unit"
+      ],
+      "primary_key": "inventory_id"
+    },
+    "StoreAndChannel": {
+      "description": "Omnichannel destinations including 800+ North American retail stores and Direct-to-Consumer e-Commerce.",
+      "properties": [
+        "channel_id",
+        "channel_name",
+        "channel_type",
+        "region",
+        "daily_sales_velocity",
+        "replenishment_priority"
+      ],
+      "primary_key": "channel_id"
+    },
+    "CustomerOrder": {
+      "description": "Customer retail and digital sales orders fulfilled from stores or direct fulfillment centers.",
+      "properties": [
+        "order_id",
+        "order_date",
+        "channel_id",
+        "customer_id",
+        "sku_id",
+        "units_ordered",
+        "units_fulfilled",
+        "promised_delivery_date",
+        "actual_delivery_date",
+        "fulfillment_status"
+      ],
+      "primary_key": "order_id"
+    },
+    "ReverseLogisticsReturn": {
+      "description": "Customer returns tracked for reason codes, hygienic inspection, restock rate, or liquidation.",
+      "properties": [
+        "return_id",
+        "order_id",
+        "sku_id",
+        "return_date",
+        "return_reason",
+        "hygiene_grade",
+        "restock_disposition",
+        "refurbish_cost_usd",
+        "net_recovery_usd"
+      ],
+      "primary_key": "return_id"
+    },
+    "TariffTradePolicy": {
+      "description": "Trade tariffs, duty rates, and trade agreements (Section 301, USMCA, CAFTA-DR, GSP) impacting Landed Cost.",
+      "properties": [
+        "policy_id",
+        "origin_country",
+        "destination_country",
+        "hs_code",
+        "standard_duty_rate",
+        "section_301_tariff_rate",
+        "trade_agreement_eligible"
+      ],
+      "primary_key": "policy_id"
+    }
+  },
+  "relationships": [
+    {
+      "source": "RawMaterialSupplier_Tier3",
+      "target": "FabricMill_Tier2",
+      "relation": "SUPPLIES_FIBERS_TO",
+      "cardinality": "N:M"
+    },
+    {
+      "source": "FabricMill_Tier2",
+      "target": "GarmentManufacturer_Tier1",
+      "relation": "DELIVERS_FABRIC_TO",
+      "cardinality": "N:M"
+    },
+    {
+      "source": "GarmentManufacturer_Tier1",
+      "target": "ProductSKU",
+      "relation": "MANUFACTURES_PRODUCT",
+      "cardinality": "N:M"
+    },
+    {
+      "source": "ProductSKU",
+      "target": "BillOfMaterials",
+      "relation": "DEFINED_BY_BOM",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "GarmentManufacturer_Tier1",
+      "target": "PurchaseOrder",
+      "relation": "RECEIVES_SOURCING_PO",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "PurchaseOrder",
+      "target": "ShipmentLogistics",
+      "relation": "TRANSPORTED_VIA",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "ShipmentLogistics",
+      "target": "DistributionCenter_RDC",
+      "relation": "DESTINED_FOR_RDC",
+      "cardinality": "N:1"
+    },
+    {
+      "source": "DistributionCenter_RDC",
+      "target": "InventoryLedger",
+      "relation": "MAINTAINS_STOCK",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "DistributionCenter_RDC",
+      "target": "StoreAndChannel",
+      "relation": "REPLENISHES_CHANNEL",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "StoreAndChannel",
+      "target": "CustomerOrder",
+      "relation": "RECEIVES_CUSTOMER_ORDER",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "CustomerOrder",
+      "target": "ReverseLogisticsReturn",
+      "relation": "INITIATES_RETURN",
+      "cardinality": "1:N"
+    },
+    {
+      "source": "TariffTradePolicy",
+      "target": "ShipmentLogistics",
+      "relation": "APPLIES_DUTIES_TO",
+      "cardinality": "1:N"
+    }
+  ]
+}

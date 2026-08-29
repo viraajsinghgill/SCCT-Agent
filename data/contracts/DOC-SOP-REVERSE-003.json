@@ -1,0 +1,13 @@
+{
+  "doc_id": "DOC-SOP-REVERSE-003",
+  "title": "Global Reverse Logistics Standard Operating Procedure: Intimates & Apparel Restock Grading",
+  "category": "Operational SOP",
+  "supplier": "Victoria's Secret Supply Chain Operations",
+  "effective_date": "2024-06-01",
+  "key_clauses": {
+    "hygienic_inspection": "Bras and sleepwear with original tags and hygiene liners intact qualify for Grade A Sellable Restock.",
+    "quarantine_liquidation": "Items with missing tags, minor wrinkles, or opened packaging are routed to Grade B Liquidation/Outlet channels.",
+    "mandatory_destruction": "Panties and opened swimwear without intact sanitary strips must be destroyed immediately for consumer safety compliance."
+  },
+  "content": "# REVERSE LOGISTICS STANDARD OPERATING PROCEDURE (SOP-RL-2024-08)\n**Scope:** North American Regional Distribution Centers (Columbus, Ontario, Atlanta, Toronto)\n\n## 1. Hygienic Grading Protocol\n- **Grade A (Sellable Restock):** Tags attached, hygiene liner intact, no perfume/deodorant residue. Automated return to sellable inventory within 24 hours.\n- **Grade B (Liquidation / Off-Price):** Intact structure but minor cosmetic packaging defect. Rerouted to Columbus Outlet liquidation sorting.\n- **Grade C (Immediate Destruction):** Compromised sanitary hygiene seal on intimate bottoms. Automated disposal manifest generation.\n"
+}

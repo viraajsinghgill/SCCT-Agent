@@ -1,0 +1,14 @@
+{
+  "doc_id": "DOC-MSA-CRY-002",
+  "title": "Master Manufacturing Agreement: Crystal International Vietnam & Victoria's Secret & Co.",
+  "category": "Vendor Contract & SLA",
+  "supplier": "Crystal International Vietnam Ltd",
+  "effective_date": "2024-03-15",
+  "key_clauses": {
+    "lead_time_sla": "38 calendar days standard cut-and-sew cycle.",
+    "otd_target": "96.0% On-Time Delivery threshold.",
+    "penalty_terms": "Late delivery penalty of 1.0% per week of delay up to a cap of 10% of PO FOB value.",
+    "tariffs_duties": "Goods subject to Section 301 and standard US Harmonized Tariff Schedule (HTS Code 6212.10 - Brassieres). Tariff fluctuations beyond +/- 5% trigger bilateral pricing renegotiation."
+  },
+  "content": "# MASTER MANUFACTURING AGREEMENT (MMA-VS-CRY-2024)\n**Buyer:** Victoria's Secret & Co.\n**Manufacturer:** Crystal International Vietnam Ltd (Haiphong, Vietnam)\n\n## Article 5: Delivery & Liquidated Damages\n- **Promised Delivery Date:** Crystal International must acknowledge POs within 72 hours.\n- **Section 301 Tariff Adjustments:** In the event of changes to US tariff schedules on Vietnamese apparel exports, landed cost variance will be shared 50/50 between Buyer and Manufacturer.\n- **Expedite Protocol:** If production bottlenecks threaten Holiday Season stock arrival at Long Beach Gateway RDC, Crystal International shall allocate overtime shifts at its own expense.\n"
+}

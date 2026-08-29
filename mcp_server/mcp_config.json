@@ -1,0 +1,11 @@
+﻿{
+  "mcpServers": {
+    "scct-control-tower": {
+      "command": "python",
+      "args": ["mcp_server/supply_chain_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}

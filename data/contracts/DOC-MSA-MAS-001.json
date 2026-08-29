@@ -1,0 +1,15 @@
+{
+  "doc_id": "DOC-MSA-MAS-001",
+  "title": "Master Sourcing Agreement: MAS Holdings Active Fab & Victoria's Secret & Co.",
+  "category": "Vendor Contract & SLA",
+  "supplier": "MAS Holdings Active Fab (Sri Lanka)",
+  "effective_date": "2024-01-01",
+  "key_clauses": {
+    "lead_time_sla": "Standard production lead time is strictly 45 business days from Purchase Order confirmation.",
+    "otd_target": "Contractual minimum On-Time In-Full (OTIF) delivery requirement is 95.0%.",
+    "penalty_terms": "If OTD falls below 90.0% in any calendar quarter, Supplier shall credit VS&Co 2.5% of total quarterly invoice value. If OTD drops below 85.0%, Supplier shall pay expedited air-freight differential in full.",
+    "force_majeure": "Monsoons and Colombo port strikes exceeding 5 consecutive days require 48-hour formal notification.",
+    "esg_compliance": "Mandatory OEKO-TEX Standard 100 Class II compliance on all intimate apparel fabrics."
+  },
+  "content": "# MASTER SOURCING AGREEMENT (MSA-VS-MAS-2024)\n**Buyer:** Victoria's Secret & Co. (Reynoldsburg, OH)\n**Supplier:** MAS Holdings Active Fab (Colombo, Sri Lanka)\n\n## Section 4: Performance Service Level Agreement (SLA)\n1. **On-Time Delivery (OTD):** Supplier covenants to achieve minimum 95.0% On-Time Delivery measured at Port of Savannah destination receipt against customer promised date.\n2. **Quality & Defect Acceptance:** Critical defect rate shall not exceed 0.00% (Zero Tolerance for broken needles/metal contaminants). Major defect AQL is 1.5.\n3. **Liquidated Damages & Penalties:** \n   - A drop below 90% OTD triggers an automatic 2.5% rebate on all delayed lots.\n   - For delays exceeding 14 calendar days during peak Semi-Annual Sale promotional windows, MAS Holdings shall fund 100% of expedited air-freight via FedEx/Emirates SkyCargo.\n\n## Section 7: Material Compliance & OEKO-TEX Certification\nAll synthetic laces, microfibers, and Lycra blends must hold active OEKO-TEX Standard 100 Annex 6 certification and comply with California Proposition 65 without exception.\n"
+}

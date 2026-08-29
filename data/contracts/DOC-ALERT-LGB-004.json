@@ -1,0 +1,12 @@
+{
+  "doc_id": "DOC-ALERT-LGB-004",
+  "title": "Port of Long Beach / Los Angeles Congestion & Intermodal Rail Advisory",
+  "category": "Supply Chain Disruption Incident Report",
+  "supplier": "Logistics Control Tower Operations",
+  "effective_date": "2025-08-15",
+  "key_clauses": {
+    "congestion_delay": "Average container vessel dwell time increased to 6.8 days at Long Beach Berth 400.",
+    "mitigation_plan": "Reroute 30% of Southeast Asia volume through Suez/Panama to Port of Savannah; activate Union Pacific Priority Intermodal block-trains to Columbus Central RDC."
+  },
+  "content": "# SUPPLY CHAIN DISRUPTION ADVISORY: WEST COAST CONTAINER DWELL\n**Incident Ref:** DISR-2025-LGB-09\n**Impacted Lanes:** Haiphong -> Long Beach, Colombo -> Long Beach\n\n**Summary:**\nDue to high peak-season container arrivals, dwell times at Port of Long Beach container terminals have risen from 2.1 days to 6.8 days.\n**Recommended Operational Actions:**\n1. Invoke Carrier SCAC Priority Dwell agreements with Maersk and MSC.\n2. Divert urgent holiday SKU shipments (Dream Angels Bra, Satin Pajama Sets) to air expedite via FedEx Trade Logistics.\n3. Accelerate Mexico nearshore production runs at Tegra Global to cushion Midwest RDC inventory buffers.\n"
+}

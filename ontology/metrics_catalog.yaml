@@ -1,0 +1,109 @@
+﻿version: 1.0.0
+domain: Victorias_Secret_Supply_Chain_Control_Tower
+canonical_metrics:
+  on_time_delivery_rate:
+    display_name: "On-Time Delivery (OTD %)"
+    definition: "Percentage of fulfilled orders/shipments that arrived on or prior to the customer/destination promised delivery date with zero reported defects or quantity shortages."
+    formula: "SUM(CASE WHEN actual_delivery_date <= promised_delivery_date AND defect_count = 0 THEN 1 ELSE 0 END) / COUNT(*) * 100.0"
+    aggregation: "RATIO"
+    unit: "PERCENT"
+    grain: "ORDER_LINE_LEVEL"
+    governing_council: "Global Logistics & Omnichannel Operations Council"
+    synonyms:
+      - "OTD"
+      - "on time rate"
+      - "delivery punctuality"
+      - "on time performance"
+      - "on-time fulfillment"
+    persona_reconciliation:
+      planning_perspective: "Measured against original customer demand promise date."
+      procurement_perspective: "Measured against Tier 1 factory PO confirmation SLA."
+      logistics_perspective: "Measured against carrier estimated transit window."
+      canonical_rule: "Canonical OTD always resolves to the Customer Promised Date at the delivery destination point."
+
+  order_fill_rate:
+    display_name: "Order Fill Rate (%)"
+    definition: "Percentage of customer and store requested SKU units that were completely fulfilled and shipped in the initial fulfillment run without backorders."
+    formula: "SUM(units_fulfilled) / SUM(units_ordered) * 100.0"
+    aggregation: "RATIO"
+    unit: "PERCENT"
+    grain: "ORDER_LEVEL"
+    governing_council: "Enterprise Demand & Supply Planning"
+    synonyms:
+      - "fill rate"
+      - "order completeness"
+      - "fulfillment rate"
+      - "service level"
+    persona_reconciliation:
+      planning_perspective: "Evaluates demand unconstrained supply readiness."
+      procurement_perspective: "Evaluates vendor PO completeness."
+      logistics_perspective: "Evaluates outbound shipment completeness."
+      canonical_rule: "Canonical Fill Rate equals Total Fulfilled Units divided by Total Ordered Units across all lines."
+
+  days_of_inventory:
+    display_name: "Days of Inventory (DOI / DOH)"
+    definition: "The average number of days it takes to turn current inventory on hand based on the forward annualized cost of goods sold."
+    formula: "SUM(units_on_hand * unit_cost_usd) / (SUM(daily_cogs_usd) + 0.0001)"
+    aggregation: "CUSTOM"
+    unit: "DAYS"
+    grain: "SKU_LOCATION_DAILY"
+    governing_council: "Corporate Finance & Inventory Optimization"
+    synonyms:
+      - "DOI"
+      - "DOH"
+      - "days of supply"
+      - "inventory velocity"
+      - "weeks of supply"
+    persona_reconciliation:
+      planning_perspective: "Evaluates forward cover against seasonal sales spikes (e.g. Semi-Annual Sale)."
+      procurement_perspective: "Evaluates safety stock lead-time buffers."
+      logistics_perspective: "Evaluates warehouse storage utilization."
+      canonical_rule: "Canonical DOI uses standard ending inventory valuation over 365-day trailing COGS rate."
+
+  landed_cost_per_unit:
+    display_name: "Total Landed Cost ($/unit)"
+    definition: "The comprehensive, fully absorbed per-unit cost of sourcing, assembling, transporting, paying tariffs/duties, and drayage to the North American RDC."
+    formula: "AVG(unit_fob_price_usd + allocated_freight_usd + customs_tariff_usd + drayage_handling_usd)"
+    aggregation: "AVERAGE"
+    unit: "USD"
+    grain: "SHIPMENT_LINE_LEVEL"
+    governing_council: "Strategic Sourcing & Global Trade Compliance"
+    synonyms:
+      - "landed cost"
+      - "total delivered cost"
+      - "all-in unit cost"
+      - "duty-paid cost"
+      - "COGS per unit"
+    persona_reconciliation:
+      planning_perspective: "Uses standard budgeted landed cost."
+      procurement_perspective: "Focuses on FOB factory purchase price."
+      logistics_perspective: "Focuses on freight, demurrage, and bunker fuel surcharges."
+      canonical_rule: "Canonical Landed Cost incorporates all landed components (FOB + Freight + Tariff + Handling) at actuals."
+
+  supplier_quality_pass_rate:
+    display_name: "Supplier Quality & Compliance Pass Rate (%)"
+    definition: "Percentage of received raw material or garment production lots that pass OEKO-TEX, GOTS, REACH, and dimensional quality inspections on first test."
+    formula: "SUM(CASE WHEN inspection_result = 'PASSED' THEN 1 ELSE 0 END) / COUNT(*) * 100.0"
+    aggregation: "RATIO"
+    unit: "PERCENT"
+    grain: "INSPECTION_LOT_LEVEL"
+    governing_council: "Quality Assurance & ESG Sourcing Directorate"
+    synonyms:
+      - "QA pass rate"
+      - "first pass yield"
+      - "compliance rate"
+      - "vendor quality rating"
+
+  reverse_logistics_restock_rate:
+    display_name: "Reverse Logistics Restock Rate (%)"
+    definition: "Percentage of returned customer merchandise that successfully passes hygienic sanitary inspection and is returned to sellable active inventory."
+    formula: "SUM(CASE WHEN restock_disposition = 'SELLABLE_RESTOCK' THEN 1 ELSE 0 END) / COUNT(*) * 100.0"
+    aggregation: "RATIO"
+    unit: "PERCENT"
+    grain: "RETURN_UNIT_LEVEL"
+    governing_council: "Omnichannel Returns & Circularity Operations"
+    synonyms:
+      - "restock rate"
+      - "return recovery rate"
+      - "salvage yield"
+      - "return-to-shelf rate"
