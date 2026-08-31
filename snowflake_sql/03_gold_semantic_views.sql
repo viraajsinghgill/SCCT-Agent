@@ -1,4 +1,4 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- SNOWFLAKE MEDALLION ARCHITECTURE: GOLD LAYER (GOVERNED SEMANTIC VIEWS)
 -- Unified Supply Chain Control Tower Views with Canonical Metrics Embedded
 -- ==============================================================================
@@ -45,8 +45,8 @@ SELECT
     (CASE WHEN f.country = 'Vietnam' THEN 12.0 WHEN f.country = 'Sri Lanka' THEN 8.0 WHEN f.country = 'Mexico' THEN 0.0 ELSE 15.0 END) AS tariff_rate_pct
 FROM VS_SUPPLY_CHAIN_DB.SILVER.CNF_PURCHASE_ORDERS po
 LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.CNF_SHIPMENTS s ON po.po_number = s.po_number
-LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.CNF_OMNICHANNEL_ORDERS o ON po.sku_id = o.sku_id
-LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.CNF_QA_INSPECTIONS qa ON po.sku_id = qa.sku_id
+LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.CNF_OMNICHANNEL_ORDERS o ON po.po_number = o.po_number
+LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.CNF_QA_INSPECTIONS qa ON po.po_number = qa.po_number
 LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.DIM_FACTORIES f ON po.vendor_code = f.vendor_code
 LEFT JOIN VS_SUPPLY_CHAIN_DB.SILVER.DIM_PRODUCTS p ON po.sku_id = p.sku_id;
 
@@ -62,9 +62,8 @@ SELECT
     inv.units_in_transit,
     inv.safety_stock_threshold,
     p.unit_standard_cost_usd,
-    inv.units_on_hand * p.unit_standard_cost_usd AS total_inventory_valuation_usd,
+    (inv.units_on_hand * p.unit_standard_cost_usd) AS total_inventory_valuation_usd,
     inv.daily_sales_velocity,
-    -- Canonical Days of Inventory (DOI)
     ROUND(inv.units_on_hand / NULLIF(inv.daily_sales_velocity, 0), 1) AS days_of_inventory,
     CASE 
         WHEN inv.units_on_hand < inv.safety_stock_threshold THEN 'CRITICAL_STOCKOUT_RISK'
@@ -73,20 +72,3 @@ SELECT
     END AS stock_health_status
 FROM VS_SUPPLY_CHAIN_DB.SILVER.CNF_INVENTORY_LEDGER inv
 JOIN VS_SUPPLY_CHAIN_DB.SILVER.DIM_PRODUCTS p ON inv.sku_id = p.sku_id;
-
--- 3. Governed Reverse Logistics & Returns View
-CREATE OR REPLACE VIEW VS_SUPPLY_CHAIN_DB.GOLD.VS_GOLD_REVERSE_LOGISTICS_METRICS AS
-SELECT
-    r.return_id,
-    r.sku_id,
-    p.sku_name,
-    p.category,
-    r.return_reason_raw AS return_reason,
-    r.hygiene_inspection_grade,
-    r.disposition_code AS restock_disposition,
-    r.refund_amount_usd,
-    CASE WHEN r.disposition_code = 'SELLABLE_RESTOCK' THEN 1 ELSE 0 END AS is_restocked,
-    CASE WHEN r.disposition_code = 'LIQUIDATION' THEN 1 ELSE 0 END AS is_liquidated,
-    CASE WHEN r.disposition_code = 'DESTROY_HYGIENE' THEN 1 ELSE 0 END AS is_destroyed
-FROM VS_SUPPLY_CHAIN_DB.BRONZE.RAW_CUSTOMER_RETURNS r
-JOIN VS_SUPPLY_CHAIN_DB.SILVER.DIM_PRODUCTS p ON r.sku_id = p.sku_id;

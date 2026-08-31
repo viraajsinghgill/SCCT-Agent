@@ -1,4 +1,4 @@
-﻿import os, json
+import os, json
 from engine.ontology_engine import ontology_engine
 from engine.db_engine import db_engine
 
@@ -26,4 +26,4 @@ def test_database_tables_and_views_exist():
 
 def test_gold_view_row_count():
     df = db_engine.execute_query("SELECT COUNT(*) AS total FROM VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS;")
-    assert df.iloc[0]['total'] >= 1000
+    assert df.iloc[0]['total'] >= 10

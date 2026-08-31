@@ -1,4 +1,4 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- SNOWFLAKE MEDALLION ARCHITECTURE: BRONZE LAYER (RAW INGESTION)
 -- Victoria's Secret & Co. Global Supply Chain Control Tower
 -- ==============================================================================
@@ -30,7 +30,7 @@ CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_TMS_SHIPMENTS (
     container_num VARCHAR(50),
     bill_of_lading VARCHAR(50),
     po_number VARCHAR(50),
-    carrier_scac VARCHAR(20),
+    carrier_scac VARCHAR(50),
     origin_port VARCHAR(50),
     dest_port VARCHAR(50),
     dest_rdc_code VARCHAR(50),
@@ -45,13 +45,14 @@ CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_TMS_SHIPMENTS (
     _ingested_at TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
 
--- 3. Raw Quality & Laboratory Audit Inspection Records (Intertek / SGS / In-House QA)
+-- 3. Raw Quality & Laboratory Audit Inspection Records
 CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_QA_INSPECTIONS (
     inspection_id VARCHAR(50),
     batch_lot_number VARCHAR(50),
     vendor_code VARCHAR(50),
     fabric_mill_code VARCHAR(50),
     sku_id VARCHAR(50),
+    po_number VARCHAR(50),
     oeko_tex_cert_id VARCHAR(50),
     gots_cert_id VARCHAR(50),
     reach_chemical_test VARCHAR(20),
@@ -65,9 +66,10 @@ CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_QA_INSPECTIONS (
     _ingested_at TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
 
--- 4. Raw Omnichannel Point of Sale & Store/E-Com Orders
+-- 4. Raw Omnichannel Store & E-Commerce Orders
 CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_OMNICHANNEL_ORDERS (
     order_id VARCHAR(50),
+    po_number VARCHAR(50),
     channel_code VARCHAR(50),
     customer_id VARCHAR(50),
     sku_id VARCHAR(50),
@@ -80,14 +82,14 @@ CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_OMNICHANNEL_ORDERS (
     _ingested_at TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
 
--- 5. Raw Reverse Logistics & Customer Returns
+-- 5. Raw Customer Returns & Reverse Logistics
 CREATE OR REPLACE TABLE VS_SUPPLY_CHAIN_DB.BRONZE.RAW_CUSTOMER_RETURNS (
     return_id VARCHAR(50),
     order_id VARCHAR(50),
     sku_id VARCHAR(50),
     return_request_ts VARCHAR(50),
-    return_reason_raw VARCHAR(100),
-    hygiene_inspection_grade VARCHAR(20),
+    return_reason_raw VARCHAR(50),
+    hygiene_inspection_grade VARCHAR(30),
     disposition_code VARCHAR(30),
     refund_amount_usd FLOAT,
     _ingested_at TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()

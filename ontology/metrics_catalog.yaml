@@ -1,4 +1,4 @@
-﻿version: 1.0.0
+version: 1.0.0
 domain: Victorias_Secret_Supply_Chain_Control_Tower
 canonical_metrics:
   on_time_delivery_rate:
@@ -74,6 +74,14 @@ canonical_metrics:
       - "all-in unit cost"
       - "duty-paid cost"
       - "COGS per unit"
+      - "cost"
+      - "costing"
+      - "highest cost"
+      - "unit cost"
+      - "product cost"
+      - "most expensive"
+      - "expensive"
+      - "spend per unit"
     persona_reconciliation:
       planning_perspective: "Uses standard budgeted landed cost."
       procurement_perspective: "Focuses on FOB factory purchase price."

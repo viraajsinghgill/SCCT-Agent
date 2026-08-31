@@ -1,8 +1,8 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import json, os, datetime
+import json, os, datetime, re
 
 from engine import (
     cortex_analyst_agent,
@@ -67,8 +67,19 @@ with st.sidebar:
         index=0
     )
     
-    st.markdown("#### ⚙️ Cloud Architecture")
-    st.info("⚡ **Engine Mode:** Snowflake Cortex Analyst & Search (Dual SQLite Local Cache)")
+    st.markdown("#### ⚙️ Data Engine Selection")
+    engine_choice = st.radio(
+        "Select Execution Engine:",
+        ["❄️ Live Snowflake Cortex (Primary)", "💾 Local SQLite Cache"],
+        index=0
+    )
+    if "Snowflake" in engine_choice:
+        db_engine.set_mode("Snowflake")
+        st.success("Connected to `VS_SUPPLY_CHAIN_DB.GOLD`")
+    else:
+        db_engine.set_mode("SQLite")
+        st.info("Using local high-performance cache")
+
     
     st.divider()
     st.markdown("#### 🛡️ Active Guardrails")
@@ -110,68 +121,136 @@ tab_chat, tab_reconcile, tab_tariff, tab_graph, tab_docs, tab_actions = st.tabs(
 ])
 
 # -------------------------------------------------------------------------------------------------
-# TAB 1: Governed Conversational Analytics (Cortex Analyst)
+# TAB 1: Governed Conversational Analytics (Cortex Analyst with Persistent Chat History)
 # -------------------------------------------------------------------------------------------------
 with tab_chat:
     st.markdown("### 💬 Snowflake Cortex Analyst: Natural Language Supply Chain Queries")
-    st.caption("Ask questions across ERP, TMS, QA, and Inventory. Answers are strictly grounded in governed gold semantic views.")
+    st.caption("Ask questions across ERP, TMS, QA, and Inventory. Conversations are preserved across turns and strictly grounded in governed Gold semantic views.")
     
-    # Quick Sample Questions
-    st.markdown("**Sample Benchmark Questions:**")
-    quick_cols = st.columns(4)
-    q_selected = None
-    with quick_cols[0]:
-        if st.button("📊 OTD & Landed Cost by Country"):
-            q_selected = "What is the On-Time Delivery rate and Landed Cost by sourcing country for Q3?"
-    with quick_cols[1]:
-        if st.button("📦 Days of Inventory by RDC"):
-            q_selected = "What are the Days of Inventory (DOI) across our North American Regional Distribution Centers?"
-    with quick_cols[2]:
-        if st.button("⚖️ MAS vs Crystal Production"):
-            q_selected = "Compare the production allocation, lead time, and tariff impact between MAS Holdings Sri Lanka and Crystal International Vietnam."
-    with quick_cols[3]:
-        if st.button("👙 OTD for Bras in Vietnam"):
-            q_selected = "What is the OTD for Bras in Vietnam?"
+    # Initialize session state chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    
+    # Quick Sample Questions Header & Clear History
+    col_benchmarks, col_clear = st.columns([5, 1])
+    with col_clear:
+        if st.button("🗑️ Clear History", help="Reset conversational chat thread"):
+            st.session_state.chat_history = []
+            st.rerun()
+    
+    with col_benchmarks:
+        st.markdown("**💡 Quick Benchmark Prompts:**")
+        quick_cols = st.columns(4)
+        sample_prompt = None
+        with quick_cols[0]:
+            if st.button("📊 OTD & Landed Cost by Country"):
+                sample_prompt = "What is the On-Time Delivery rate and Landed Cost by sourcing country for Q3?"
+        with quick_cols[1]:
+            if st.button("📦 Days of Inventory by RDC"):
+                sample_prompt = "What are the Days of Inventory (DOI) across our North American Regional Distribution Centers?"
+        with quick_cols[2]:
+            if st.button("⚖️ MAS vs Crystal Production"):
+                sample_prompt = "Compare the production allocation, lead time, and tariff impact between MAS Holdings Sri Lanka and Crystal International Vietnam."
+        with quick_cols[3]:
+            if st.button("🏭 Top Supplier Business"):
+                sample_prompt = "from which supplier we have done most of business from all country"
 
-    user_query = st.text_input("Enter natural language business question:", value=q_selected or "", placeholder="e.g. Compare landed cost and transit lead time for Bras between Sri Lanka and Mexico")
-    
-    if st.button("🚀 Ask SCCT Agent", type="primary") or user_query:
-        if user_query:
-            with st.spinner("Analyzing semantic model, verifying guardrails, and synthesizing Snowflake SQL..."):
-                response = cortex_analyst_agent.generate_and_execute(user_query, active_persona)
+    st.markdown("---")
+
+    # Render previous conversation history
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(f"**{msg['content']}**")
+        elif msg["role"] == "assistant":
+            with st.chat_message("assistant", avatar="👑"):
+                resp = msg["response"]
+                if resp.get("success"):
+                    st.markdown(f"### 💡 Executive Insight\n{resp.get('summary')}")
+                    
+                    with st.expander("🛡️ Governed Snowflake SQL & Semantic Provenance", expanded=False):
+                        st.code(resp.get("generated_sql"), language="sql")
+                        if resp.get('is_verified_golden_query'):
+                            st.caption(f"⭐ Grounded in verified Golden Benchmark | 🔌 Source: **{resp.get('backend', db_engine.backend)}** ({resp.get('row_count')} rows)")
+                        else:
+                            st.caption(f"🔒 Governed by Gold Semantic Model | 🔌 Source: **{resp.get('backend', db_engine.backend)}** ({resp.get('row_count')} rows)")
+
+                    df_res = pd.DataFrame(resp.get("data", []))
+                    if not df_res.empty:
+                        st.markdown("#### 📋 Result Data")
+                        st.dataframe(df_res, use_container_width=True)
+                        
+                        # Safe visualization
+                        try:
+                            clean_df = df_res.copy()
+                            clean_df.columns = [re.sub(r'[^a-zA-Z0-9_]', '_', str(col)).strip('_') for col in clean_df.columns]
+                            num_cols = clean_df.select_dtypes(include=[np.number]).columns.tolist()
+                            cat_cols = clean_df.select_dtypes(include=['object']).columns.tolist()
+                            
+                            if num_cols and cat_cols and len(clean_df) > 1:
+                                chart = alt.Chart(clean_df).mark_bar(color='#D43F70').encode(
+                                    x=alt.X(f"{cat_cols[0]}:N", sort=None, title=cat_cols[0].replace('_', ' ').title()),
+                                    y=alt.Y(f"{num_cols[0]}:Q", title=num_cols[0].replace('_', ' ').title()),
+                                    tooltip=list(clean_df.columns)
+                                ).properties(height=260)
+                                st.altair_chart(chart, use_container_width=True)
+                        except Exception:
+                            pass
+                else:
+                    st.error(f"**Query Rejection / Guardrail Alert:** {resp.get('error')}")
+
+    # Handle incoming input (either from chat_input or sample prompt button)
+    user_input = st.chat_input("Ask Snowflake Cortex Analyst a supply chain question (e.g. 'top 5 suppliers by tariff')...")
+    active_query = sample_prompt or user_input
+
+    if active_query:
+        # 1. Render User Message
+        with st.chat_message("user", avatar="👤"):
+            st.markdown(f"**{active_query}**")
+        st.session_state.chat_history.append({"role": "user", "content": active_query})
+
+        # 2. Execute with Agent & Render Assistant Message
+        with st.chat_message("assistant", avatar="👑"):
+            with st.spinner("Analyzing semantic model, verifying guardrails, and querying Snowflake Cortex..."):
+                response = cortex_analyst_agent.generate_and_execute(active_query, active_persona)
                 
                 if response['success']:
-                    st.success(f"**Insight:** {response.get('summary')}")
+                    st.markdown(f"### 💡 Executive Insight\n{response.get('summary')}")
                     
-                    c1, c2 = st.columns([1.2, 1.8])
-                    with c1:
-                        st.markdown("#### 🛡️ Governed Snowflake SQL")
+                    with st.expander("🛡️ Governed Snowflake SQL & Semantic Provenance", expanded=False):
                         st.code(response['generated_sql'], language="sql")
                         if response.get('is_verified_golden_query'):
-                            st.caption("⭐ Grounded in verified Snowflake Cortex Analyst Golden Benchmark.")
+                            st.caption(f"⭐ Grounded in verified Golden Benchmark | 🔌 Source: **{response.get('backend', db_engine.backend)}** ({response.get('row_count')} rows)")
                         else:
-                            st.caption("🔒 Verified by Enterprise Governance Guardrails (Gold Layer Conformed).")
-                    
-                    with c2:
+                            st.caption(f"🔒 Governed by Gold Semantic Model | 🔌 Source: **{response.get('backend', db_engine.backend)}** ({response.get('row_count')} rows)")
+
+                    df_res = pd.DataFrame(response['data'])
+                    if not df_res.empty:
                         st.markdown("#### 📋 Result Data")
-                        df_res = pd.DataFrame(response['data'])
-                        if not df_res.empty:
-                            st.dataframe(df_res, use_container_width=True)
+                        st.dataframe(df_res, use_container_width=True)
+                        
+                        # Safe visualization
+                        try:
+                            clean_df = df_res.copy()
+                            clean_df.columns = [re.sub(r'[^a-zA-Z0-9_]', '_', str(col)).strip('_') for col in clean_df.columns]
+                            num_cols = clean_df.select_dtypes(include=[np.number]).columns.tolist()
+                            cat_cols = clean_df.select_dtypes(include=['object']).columns.tolist()
                             
-                            # Auto-visualize if numeric columns exist
-                            num_cols = df_res.select_dtypes(include=[np.number]).columns.tolist()
-                            cat_cols = df_res.select_dtypes(include=['object']).columns.tolist()
-                            if num_cols and cat_cols:
-                                chart = alt.Chart(df_res).mark_bar(color='#D43F70').encode(
-                                    x=alt.X(cat_cols[0], sort=None),
-                                    y=alt.Y(num_cols[0]),
-                                    tooltip=list(df_res.columns)
-                                ).properties(height=280)
+                            if num_cols and cat_cols and len(clean_df) > 1:
+                                chart = alt.Chart(clean_df).mark_bar(color='#D43F70').encode(
+                                    x=alt.X(f"{cat_cols[0]}:N", sort=None, title=cat_cols[0].replace('_', ' ').title()),
+                                    y=alt.Y(f"{num_cols[0]}:Q", title=num_cols[0].replace('_', ' ').title()),
+                                    tooltip=list(clean_df.columns)
+                                ).properties(height=260)
                                 st.altair_chart(chart, use_container_width=True)
-                        else:
-                            st.info("No records match the requested parameters.")
+                        except Exception:
+                            pass
                 else:
                     st.error(f"**Query Rejection / Guardrail Alert:** {response.get('error')}")
+
+        st.session_state.chat_history.append({"role": "assistant", "response": response})
+        st.rerun()
+
 
 # -------------------------------------------------------------------------------------------------
 # TAB 2: Cross-Persona Reconciliation Simulator
