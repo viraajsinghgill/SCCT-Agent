@@ -35,10 +35,10 @@ class CortexAnalystAgent:
         if conversation_context:
             context_block = f"\nPrevious Conversation (use for context only, generate SQL for the LATEST question):\n{conversation_context}\n"
 
-        prompt = f"""You are Snowflake Cortex Analyst for Victoria's Secret & Co. (VS_SUPPLY_CHAIN_DB).
+        prompt = f"""You are Snowflake Cortex Analyst for SCCT Agent (VS_SUPPLY_CHAIN_DB).
 Schema available:
 1. VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS (po_number, sku_id, sku_name, brand, category, subcategory, factory_name, sourcing_country, sourcing_region, carrier_name, transport_mode, origin_port, dest_port, rdc_name, destination_channel, order_date, promised_delivery_date, actual_delivery_date, units_ordered, units_fulfilled, defect_count, is_iot_anomaly, unit_fob_price_usd, allocated_freight_usd, customs_duty_usd, unit_landed_cost_usd, total_landed_cost_usd, lead_time_days, tariff_rate_pct)
-2. VS_GOLD_INVENTORY_LEDGER_METRICS (inventory_id, rdc_name, sku_id, sku_name, category, units_on_hand, units_in_transit, daily_cogs_usd, ending_inventory_cost_usd, days_of_inventory, stock_health_status)
+2. VS_GOLD_INVENTORY_LEDGER_METRICS (inventory_id, rdc_name, sku_id, sku_name, category, units_on_hand, units_in_transit, safety_stock_threshold, unit_standard_cost_usd, total_inventory_valuation_usd, daily_sales_velocity, days_of_inventory, stock_health_status)
 {context_block}
 Rules:
 - Generate ONLY valid Snowflake SELECT SQL query, no markdown fences, no comments, no explanation.

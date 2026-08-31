@@ -124,6 +124,14 @@ class DatabaseEngine:
         return None
 
     # ── Snowflake helpers ─────────────────────────────────────────────────────
+    def _get_snowpark_session(self):
+        """Check if running inside Snowflake Native Streamlit (SiS)."""
+        try:
+            from snowflake.snowpark.context import get_active_session
+            return get_active_session()
+        except Exception:
+            return None
+
     def _get_snowflake_connection_raw(self, login_timeout: int = 10):
         """Raw Snowflake connector call — used for both probe and queries."""
         if not _SNOWFLAKE_AVAILABLE or _snowflake_connector is None:
@@ -146,6 +154,9 @@ class DatabaseEngine:
 
     def test_snowflake_connection(self) -> dict:
         """Return a dict with connection status and server info."""
+        session = self._get_snowpark_session()
+        if session is not None:
+            return {'ok': True, 'account': 'Snowpark_SiS', 'role': 'CURRENT_ROLE', 'warehouse': 'CURRENT_WH', 'database': 'CURRENT_DB', 'schema': 'CURRENT_SCHEMA'}
         if not _SNOWFLAKE_AVAILABLE:
             return {'ok': False, 'error': 'snowflake-connector-python not installed'}
         if not (self._sf_account and self._sf_user and self._sf_password):
@@ -187,6 +198,19 @@ class DatabaseEngine:
     # ── unified execute ───────────────────────────────────────────────────────
     def execute_query(self, query: str) -> pd.DataFrame:
         """Execute a governed SQL query and return a DataFrame."""
+        # 1. Native Snowpark Session (inside Snowflake SiS)
+        snowpark_session = self._get_snowpark_session()
+        if snowpark_session is not None:
+            try:
+                sf_df = snowpark_session.sql(query)
+                pdf = sf_df.to_pandas()
+                pdf.columns = [c.lower() for c in pdf.columns]
+                return pdf
+            except Exception as e:
+                # If snowpark fails, bubble error
+                raise e
+
+        # 2. Snowflake Connector (local dev connecting to remote Snowflake)
         if self._use_snowflake:
             conn = self._get_snowflake_connection()
             try:

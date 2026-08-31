@@ -16,7 +16,7 @@ from engine import (
 )
 
 st.set_page_config(
-    page_title="SCCT Agent | Victoria's Secret & Co. Control Tower",
+    page_title="SCCT Agent | Supply Chain Control Tower",
     page_icon="👑",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -55,9 +55,13 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Victoria%27s_Secret_logo.svg/1200px-Victoria%27s_Secret_logo.svg.png", width=220)
-    st.markdown("### 🌐 Global SCCT Agent")
-    st.markdown("**Victoria's Secret & Co. Control Tower**")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #D43F70 0%, #8E24AA 100%); padding: 16px; border-radius: 10px; text-align: center; margin-bottom: 12px;">
+        <span style="font-size: 2.2rem;">👑</span>
+        <h2 style="color: white; margin: 4px 0 0 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 1px;">SCCT AGENT</h2>
+        <p style="color: #FDF4F7; margin: 2px 0 0 0; font-size: 0.8rem;">Supply Chain Control Tower</p>
+    </div>
+    """, unsafe_allow_html=True)
     st.caption("Governed Conversational Analytics & Multi-Tier Sourcing Intelligence")
     
     st.divider()
@@ -91,9 +95,11 @@ with st.sidebar:
     if st.button("🔄 Refresh Data & Pipeline"):
         st.cache_data.clear()
         st.success("Pipeline refreshed successfully!")
+    
+    st.caption("⚡ Powered by Vinlabs")
 
 # Main Title & KPI Ribbon
-st.markdown('<div class="main-header">👑 Victoria\'s Secret & Co. Supply Chain Control Tower</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">👑 SCCT Agent — Supply Chain Control Tower</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Unified Supply Chain Ontology, Cortex Analyst Conversational Layer & Governed Multi-Tier Sourcing</div>', unsafe_allow_html=True)
 
 kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
@@ -460,3 +466,6 @@ with tab_actions:
             st.dataframe(df_hist, use_container_width=True)
         else:
             st.info("No operational interventions triggered yet in this session.")
+
+st.markdown("---")
+st.markdown("<div style='text-align: center; color: #888; font-size: 0.85rem;'>SCCT Agent · Built by Vinlabs</div>", unsafe_allow_html=True)
