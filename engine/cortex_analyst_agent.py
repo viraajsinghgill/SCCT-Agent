@@ -30,12 +30,16 @@ class CortexAnalystAgent:
                 return data.get('verified_queries', [])
         return []
 
-    def _generate_sql_via_cortex(self, user_question: str) -> Optional[str]:
+    def _generate_sql_via_cortex(self, user_question: str, conversation_context: str = "") -> Optional[str]:
+        context_block = ""
+        if conversation_context:
+            context_block = f"\nPrevious Conversation (use for context only, generate SQL for the LATEST question):\n{conversation_context}\n"
+
         prompt = f"""You are Snowflake Cortex Analyst for Victoria's Secret & Co. (VS_SUPPLY_CHAIN_DB).
 Schema available:
 1. VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS (po_number, sku_id, sku_name, brand, category, subcategory, factory_name, sourcing_country, sourcing_region, carrier_name, transport_mode, origin_port, dest_port, rdc_name, destination_channel, order_date, promised_delivery_date, actual_delivery_date, units_ordered, units_fulfilled, defect_count, is_iot_anomaly, unit_fob_price_usd, allocated_freight_usd, customs_duty_usd, unit_landed_cost_usd, total_landed_cost_usd, lead_time_days, tariff_rate_pct)
 2. VS_GOLD_INVENTORY_LEDGER_METRICS (inventory_id, rdc_name, sku_id, sku_name, category, units_on_hand, units_in_transit, daily_cogs_usd, ending_inventory_cost_usd, days_of_inventory, stock_health_status)
-
+{context_block}
 Rules:
 - Generate ONLY valid Snowflake SELECT SQL query, no markdown fences, no comments, no explanation.
 - Ground all queries on Gold views above.
@@ -53,7 +57,7 @@ User Question: {user_question}"""
             pass
         return None
 
-    def generate_and_execute(self, user_question: str, persona: str = "EXECUTIVE") -> Dict[str, Any]:
+    def generate_and_execute(self, user_question: str, persona: str = "EXECUTIVE", conversation_context: str = "") -> Dict[str, Any]:
         routing = semantic_router.route_query(user_question, persona)
         
         # 1. Check verified golden queries first
@@ -67,7 +71,7 @@ User Question: {user_question}"""
             sql = matched_vq['sql']
             is_golden = True
         elif db_engine.backend == "Snowflake":
-            cortex_sql = self._generate_sql_via_cortex(user_question)
+            cortex_sql = self._generate_sql_via_cortex(user_question, conversation_context)
             if cortex_sql:
                 sql = cortex_sql
                 is_golden = False
@@ -105,7 +109,7 @@ User Question: {user_question}"""
                 "generated_sql": sql,
                 "data": df.to_dict(orient='records'),
                 "row_count": len(df),
-                "summary": self._generate_business_summary(routing, df)
+                "summary": self._generate_business_summary(routing, df, conversation_context)
             }
         except Exception as e:
             return {
@@ -204,7 +208,7 @@ FROM VS_GOLD_SUPPLY_CHAIN_UNIFIED_METRICS{where_stmt}
 GROUP BY sourcing_country, category
 ORDER BY canonical_otd_pct DESC;"""
 
-    def _generate_business_summary(self, routing: Dict[str, Any], df) -> str:
+    def _generate_business_summary(self, routing: Dict[str, Any], df, conversation_context: str = "") -> str:
         if df.empty:
             return "No matching supply chain records found for the requested filters."
         
@@ -213,12 +217,15 @@ ORDER BY canonical_otd_pct DESC;"""
         # 1. In Snowflake mode, use Cortex LLM to synthesize a natural conversational executive insight
         if db_engine.backend == "Snowflake" and len(df) <= 50 and user_question:
             try:
+                context_block = ""
+                if conversation_context:
+                    context_block = f"\nPrevious Conversation:\n{conversation_context}\n"
                 # Take top 10 records as JSON for concise context
                 records_snippet = df.head(10).to_json(orient='records')
-                cortex_prompt = f"""You are Snowflake Cortex Analyst for Victoria's Secret & Co.
+                cortex_prompt = f"""You are Snowflake Cortex Analyst for Victoria's Secret & Co.{context_block}
 User asked: "{user_question}"
 Retrieved Data from Gold Semantic View: {records_snippet}
-Provide a natural, professional, 1-2 sentence executive answer directly answering the user's question using the retrieved data. Do NOT mention SQL, JSON, or databases."""
+Provide a natural, professional, 1-2 sentence executive answer directly answering the user's question using the retrieved data. If the user references something from a previous question, use the conversation context. Do NOT mention SQL, JSON, or databases."""
                 summary = db_engine.execute_cortex_llm(cortex_prompt, model='llama3.1-70b')
                 if summary:
                     return summary.strip().replace('"', '').replace('**', '')

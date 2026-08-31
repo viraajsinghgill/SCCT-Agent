@@ -1,3 +1,13 @@
+"""
+app_sis.py — SCCT Agent: Snowflake Streamlit-in-Snowflake (SiS) Edition
+=========================================================================
+This file is designed to run INSIDE Snowflake's native Streamlit environment.
+Key differences from app.py:
+  • Uses snowflake.snowpark.context.get_active_session() — NO user/password needed
+  • All SQL runs via session.sql() instead of snowflake.connector
+  • Cortex LLM calls via SNOWFLAKE.CORTEX.COMPLETE() through session.sql()
+  • No .env loading, no external connector, no SQLite fallback
+"""
 import streamlit as st
 import pandas as pd
 import numpy as np
