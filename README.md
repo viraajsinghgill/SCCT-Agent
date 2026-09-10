@@ -1,4 +1,4 @@
-﻿# 👑 SCCT Agent: Victoria\'s Secret & Co. Global Supply Chain Control Tower
+﻿# 👑 SCCT Agent: Global Supply Chain Control Tower
 ### Governed Conversational Analytics, Multi-Tier Sourcing Provenance & Snowflake Cortex Engine
 
 [![CoCo CLI Lifecycle](https://img.shields.io/badge/CoCo-Verified-brightgreen.svg)]()
@@ -9,7 +9,7 @@
 ---
 
 ## 🎯 Executive Summary
-Supply chain data across global retail giants like **Victoria\'s Secret & Co. (VS&Co)** is scattered across ERP (SAP), Warehouse/TMS (Manhattan Associates), Quality Lab Systems, and 3PL IoT telematics. Historically, the same operational question yielded contradictory answers across teams:
+Supply chain data across global retail giants like **(VS&Co)** is scattered across ERP (SAP), Warehouse/TMS (Manhattan Associates), Quality Lab Systems, and 3PL IoT telematics. Historically, the same operational question yielded contradictory answers across teams:
 - **Planning** saw $88.6\%$ OTD (measured strictly against unconstrained customer demand dates).
 - **Procurement** saw $97.2\%$ OTD (measured against Tier 1 factory ex-works gate exit dates).
 - **Logistics** saw $93.8\%$ OTD (measured against ocean carrier port arrival notices).
