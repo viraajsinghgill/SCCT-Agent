@@ -5,6 +5,7 @@
 [![Snowflake Cortex](https://img.shields.io/badge/Snowflake-Cortex%20Analyst%20%26%20Search-blue.svg)]()
 [![Model Context Protocol](https://img.shields.io/badge/MCP-Protocol%20Ready-purple.svg)]()
 [![Reconciliation Variance](https://img.shields.io/badge/Variance-0.00%25%20Governed-success.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://scct-agent.streamlit.app/)
 
 ---
 
